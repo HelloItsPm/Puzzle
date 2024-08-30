@@ -12,41 +12,53 @@ document.addEventListener('DOMContentLoaded', () => {
     // Crée un tableau avec les indices des pièces
     const pieces = Array.from({ length: gridSize * gridSize }, (_, i) => i);
 
-    // Mélange les pièces
-    pieces.sort(() => Math.random() - 0.5);
-
-    // Création des cellules de la grille et des pièces
-    pieces.forEach((number) => {
-        // Crée les cellules de la grille
+    // Crée les cellules de la grille
+    for (let i = 0; i < gridSize * gridSize; i++) {
         const cell = document.createElement('div');
         cell.classList.add('grid-cell');
-        cell.dataset.id = number;
+        cell.dataset.id = i;
+        cell.style.width = `${pieceSize}px`;
+        cell.style.height = `${pieceSize}px`;
         grid.appendChild(cell);
+    }
 
-        // Crée les pièces du puzzle
-        const piece = document.createElement('div');
-        piece.classList.add('piece');
-        piece.draggable = true;
-        piece.dataset.id = number;
+    // Création et mélange des pièces du puzzle
+    createAndShufflePieces();
 
-        // Calcule la position de l'image pour cette pièce
-        const row = Math.floor(number / gridSize);
-        const col = number % gridSize;
-        piece.style.backgroundImage = "url('./assets/Puzzle1.png')";
-        piece.style.backgroundPosition = `-${col * pieceSize}px -${row * pieceSize}px`;
-        piece.style.width = `${pieceSize}px`;
-        piece.style.height = `${pieceSize}px`;
+    function createAndShufflePieces() {
+        const shuffledPieces = [...pieces].sort(() => Math.random() - 0.5);
 
-        piecesContainer.appendChild(piece);
+        shuffledPieces.forEach((number) => {
+            const piece = document.createElement('div');
+            piece.classList.add('piece');
+            piece.draggable = true;
+            piece.dataset.id = number; // ID fixe de la pièce
 
-        // Ajoute les événements de drag and drop
-        piece.addEventListener('dragstart', dragStart);
-        piece.addEventListener('dragend', dragEnd);
-        cell.addEventListener('dragover', dragOver);
-        cell.addEventListener('drop', drop);
-        piecesContainer.addEventListener('dragover', dragOver);
-        piecesContainer.addEventListener('drop', drop);
-    });
+            // Calcule la position de l'image pour cette pièce
+            const row = Math.floor(number / gridSize);
+            const col = number % gridSize;
+            piece.style.backgroundImage = "url('./assets/Puzzle1.png')";
+            piece.style.backgroundPosition = `-${col * pieceSize}px -${row * pieceSize}px`;
+            piece.style.width = `${pieceSize}px`;
+            piece.style.height = `${pieceSize}px`;
+
+            piecesContainer.appendChild(piece);
+
+            // Ajoute les événements de drag and drop
+            piece.addEventListener('dragstart', dragStart);
+            piece.addEventListener('dragend', dragEnd);
+        });
+
+        // Mélange les pièces dans le conteneur des pièces
+        shufflePieces();
+    }
+
+    function shufflePieces() {
+        const piecesArray = Array.from(piecesContainer.children);
+        piecesArray.forEach(piece => {
+            piece.style.order = Math.floor(Math.random() * piecesArray.length);
+        });
+    }
 
     function dragStart(e) {
         draggedPiece = e.target;
@@ -72,29 +84,23 @@ document.addEventListener('DOMContentLoaded', () => {
             if (target.children.length === 0) {
                 // La cellule est vide, place la pièce dans la cellule
                 target.appendChild(draggedPiece);
-                draggedPiece.style.cursor = 'default';
                 placedPieces++;
             } else {
-                // La cellule est occupée, remplace la pièce en place et remet l'ancienne pièce dans le conteneur des pièces
+                // La cellule est occupée, remplace la pièce en place
                 const existingPiece = target.querySelector('.piece');
                 if (existingPiece) {
+                    // Déplace l'ancienne pièce dans le conteneur des pièces
                     piecesContainer.appendChild(existingPiece);
-                    existingPiece.draggable = true;
-                    existingPiece.style.cursor = 'grab';
                     placedPieces--;
-
-                    // Déplace la pièce actuellement déplacée dans la cellule cible
-                    target.appendChild(draggedPiece);
-                    draggedPiece.style.cursor = 'default';
-                    placedPieces++;
                 }
+                target.appendChild(draggedPiece);
+                placedPieces++;
             }
+            draggedPiece.style.cursor = 'default';
             checkCompletion();
         } else if (target === piecesContainer || target.classList.contains('piece')) {
-            // Déplace la pièce dans le conteneur des pièces si elle est déplacée à l'extérieur de la grille
+            // Déplace la pièce dans le conteneur des pièces
             piecesContainer.appendChild(draggedPiece);
-            draggedPiece.draggable = true;
-            draggedPiece.style.cursor = 'grab';
             placedPieces--;
             checkCompletion();
         }
@@ -117,13 +123,20 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Si toutes les pièces sont correctement placées, afficher le message
         if (allCorrect) {
             message.style.display = 'block';
+        } else {
+            message.style.display = 'none';
         }
     }
 
     restartBtn.addEventListener('click', () => {
         location.reload();
     });
+
+    // Ajoute les événements de drag and drop pour la grille et le conteneur des pièces
+    grid.addEventListener('dragover', dragOver);
+    grid.addEventListener('drop', drop);
+    piecesContainer.addEventListener('dragover', dragOver);
+    piecesContainer.addEventListener('drop', drop);
 });
