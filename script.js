@@ -9,6 +9,18 @@ document.addEventListener('DOMContentLoaded', () => {
     let placedPieces = 0;
     let draggedPiece = null;
 
+    // Liste des images de puzzle
+    const puzzleImages = [
+        './assets/Puzzle1.png',
+        './assets/Puzzle2.png',
+        './assets/Puzzle3.png',
+        './assets/Puzzle4.png',
+        './assets/Puzzle5.png'
+    ];
+
+    // Choisit une image aléatoirement
+    const selectedImage = puzzleImages[Math.floor(Math.random() * puzzleImages.length)];
+
     // Crée un tableau avec les indices des pièces
     const pieces = Array.from({ length: gridSize * gridSize }, (_, i) => i);
 
@@ -37,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Calcule la position de l'image pour cette pièce
             const row = Math.floor(number / gridSize);
             const col = number % gridSize;
-            piece.style.backgroundImage = "url('./assets/Puzzle1.png')";
+            piece.style.backgroundImage = `url(${selectedImage})`;
             piece.style.backgroundPosition = `-${col * pieceSize}px -${row * pieceSize}px`;
             piece.style.width = `${pieceSize}px`;
             piece.style.height = `${pieceSize}px`;
